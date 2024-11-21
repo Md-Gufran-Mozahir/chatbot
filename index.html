@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-light: #818cf8;
+            --bg-color: #f8fafc;
+            --chat-user: #818cf8;
+            --chat-bot: #ffffff;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+            /* Professional gradient mesh background */
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+                        url('https://images.unsplash.com/photo-1557683311-eac922347aa1?q=80&w=2000') center/cover;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin: 1rem 0;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -0.5px;
+        }
+
+        #chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            max-height: calc(100vh - 200px);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1.2rem;
+            border-radius: 16px;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        #input-container {
+            display: flex;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        #user-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* Loading indicator styles */
+        .loading {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .loading span {
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            animation: bounce 0.5s alternate infinite;
+        }
+
+        .loading span:nth-child(2) { animation-delay: 0.15s; }
+        .loading span:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes bounce {
+            to {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gemini AI Assistant</h1>
+        <div id="chat-container"></div>
+        <div id="input-container">
+            <input type="text" id="user-input" placeholder="Type your message here...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your actual API key
+        const API_KEY = 'AIzaSyD3qKy_tLdmUotmhLfxWa9K4ZLAbXN5L2M';
+        const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            userInput.value = '';
+            
+            const loadingIndicator = showLoading();
+
+            try {
+                const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: message
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'API request failed');
+                }
+
+                const data = await response.json();
+                const botResponse = data.candidates[0].content.parts[0].text;
+                
+                loadingIndicator.remove();
+                addMessage(botResponse, 'bot');
+            } catch (error) {
+                loadingIndicator.remove();
+                console.error('Error:', error);
+                addMessage(`Error: ${error.message}`, 'bot');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            
+            // If it's a bot message and starts with "Error:", add error styling
+            if (sender === 'bot' && text.startsWith('Error:')) {
+                messageDiv.style.backgroundColor = '#fee2e2';
+                messageDiv.style.color = '#991b1b';
+            }
+            
+            messageDiv.textContent = text;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Add loading indicator
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('loading');
+            loadingDiv.innerHTML = '<span></span><span></span><span></span>';
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return loadingDiv;
+        }
+
+        // Handle Enter key press
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        window.onload = function() {
+            addMessage("👋 Welcome! I'm your AI assistant powered by Gemini. I'm here to help you with any questions or tasks you might have. How can I assist you today?", 'bot');
+        };
+    </script>
+</body>
+</html>
